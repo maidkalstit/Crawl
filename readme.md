@@ -146,4 +146,4 @@ Centralized infrastructure dashboards are available at http://localhost:5601 (or
 ## 8. Author
 
 * **Dang Bui Thanh Tung** - Initial Work & Architectural Design - [GitHub Profile](https://github.com/maidkalstit)
-* **Contact**:[Gmail] (dtung12004@gmail.com) | [LinkedIn Profile](https://www.linkedin.com/in/t%C3%B9ng-%C4%91%E1%BA%B7ng-4a3003391/)
+* **Contact**:[Gmail](dtung12004@gmail.com) | [LinkedIn Profile](https://www.linkedin.com/in/t%C3%B9ng-%C4%91%E1%BA%B7ng-4a3003391/)
