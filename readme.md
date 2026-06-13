@@ -135,6 +135,8 @@ pytest test/
 
 Centralized infrastructure dashboards are available at http://localhost:5601 (or your configured Kibana port). SRE metrics monitor system status in real-time to maintain a target SLO of 99.5%:
 
+![ELK Kibana Dashboard](img/ELK.png)
+
 * **Ingestion Throughput**: Sum aggregation metric monitoring transactional commits over PostgreSQL destination targets.
 * **Pipeline Latency Graphs**: Time-series performance metrics tracking computational duration per synchronization cycle.
 * **Malformation Pie Charts**: Structural breakdown isolating normal operational notifications from active DLQ (Dead Letter Queue) record streams.
