@@ -1,0 +1,92 @@
+name: coingecko-data-pipeline
+
+services:
+  # ── TẦNG STAGING: MONGODB ──
+  mongodb_staging:
+    image: mongo:7.0
+    container_name: mongodb_staging
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+      - "${MONGO_PORT}:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - pipeline_network
+    restart: unless-stopped
+
+  # ── TẦNG WAREHOUSE: POSTGRESQL ──
+  postgres_warehouse:
+    image: postgres:16-alpine
+    container_name: postgres_warehouse
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - pipeline_network
+    restart: unless-stopped
+
+  # ── OBSERVABILITY: ELASTICSEARCH ──
+  elasticsearch:
+    image: elasticsearch:8.12.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false # Tắt SSL để chạy local mượt mà, không bị nghẽn chứng chỉ
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m # Giới hạn RAM 512MB để tránh treo máy cá nhân
+    ports:
+      - "${ELASTIC_PORT}:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - pipeline_network
+    restart: unless-stopped
+
+  # ── OBSERVABILITY: LOGSTASH ──
+  logstash:
+    image: logstash:8.12.0
+    container_name: logstash
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "${LOGSTASH_PORT}:5049"
+    environment:
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m # Giới hạn RAM cho Logstash
+    networks:
+      - pipeline_network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # ── OBSERVABILITY: KIBANA DASHBOARD ──
+  kibana:
+    image: kibana:8.12.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "${KIBANA_PORT}:5601"
+    networks:
+      - pipeline_network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+    driver: local
+  postgres_data:
+    driver: local
+  es_data:
+    driver: local
+
+networks:
+  pipeline_network:
+    driver: bridge
